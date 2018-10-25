@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Vigenere
@@ -7,51 +9,34 @@ namespace Vigenere
     {
         public static int CalculateKeyLength(string encryptedText)
         {
-            var allL = Enumerable.Range(1, 10).ToArray();
-            var allDistances = allL.Select(l => new List<int>()).ToArray();
-            foreach (var l in allL)
-            {
-                foreach (var distance in Enumerable.Range(1, 81))
-                {
-                    foreach (var index in Enumerable.Range(0, encryptedText.Length))
-                    {
-                        var isDuplicated = true;
-                        foreach (var i in Enumerable.Range(0, l))
-                        {
-                            if (index + i + distance >= encryptedText.Length || encryptedText[index + i] != encryptedText[index + i + distance])
-                            {
-                                isDuplicated = false;
-                            }
-                        }
-                        if (isDuplicated)
-                        {
-                            allDistances[l - 1].Add(distance);
-                        }
-                    }
-                }
-            }
-            var advancedDistances = new List<int>();
+            var gramLength = 3;
 
-            foreach (var i in Enumerable.Range(0, allDistances.Length))
+            var allDistances = new List<int>();
+
+            foreach (var distance in Enumerable.Range(gramLength, Math.Min(200, encryptedText.Length)))
             {
-                if (allDistances[i].Count > 0)
+                foreach (var index in Enumerable.Range(0, encryptedText.Length - distance - gramLength))
                 {
-                    if (allDistances[i][0] == 1 && i < 2)
+                    var aSub = encryptedText.Substring(index, gramLength);
+                    var bSub = encryptedText.Substring(index + distance, gramLength);
+
+                    if (aSub == bSub)
                     {
-                        continue;
-                    }
-                    foreach (var j in Enumerable.Range(1, allDistances[i].Count - 1))
-                    {
-                        if (j < allDistances[i].Count - 1 && allDistances[i][j] == allDistances[i][j + 1])
-                        {
-                            advancedDistances.Add(allDistances[i][j]);
-                        }
+                        allDistances.Add(distance);
                     }
                 }
             }
 
-            return advancedDistances.Aggregate(Gcd);
+            var countBarrier = (int) Math.Floor(Math.Sqrt(encryptedText.Length) / 10.0);
+
+            var advancedDistances = allDistances.FilterByOccurs(o => o > countBarrier);
+
+            var gcd = advancedDistances.Aggregate(Gcd);
+
+            return gcd;
         }
+
+
 
         public static int Gcd(int a, int b)
         {

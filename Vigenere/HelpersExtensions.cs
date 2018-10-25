@@ -35,5 +35,14 @@ namespace Vigenere
                 .Select(x => x.Key)
                 .First();
         }
+
+        public static IEnumerable<T> FilterByOccurs<T>(this IEnumerable<T> sequence, Func<int, bool> occursFunc)
+        {
+            return sequence
+                .GroupBy(x => x)
+                .Select(x => (value: x.Key, times: x.Count()))
+                .Where(x => occursFunc(x.times))
+                .Select(x => x.value);
+        }
     }
 }

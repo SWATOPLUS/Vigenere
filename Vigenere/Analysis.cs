@@ -13,7 +13,7 @@ namespace Vigenere
 
             var allDistances = new List<int>();
 
-            foreach (var distance in Enumerable.Range(gramLength, Math.Min(200, encryptedText.Length)))
+            foreach (var distance in Enumerable.Range(gramLength, Math.Min(200, encryptedText.Length - 2 * gramLength)))
             {
                 foreach (var index in Enumerable.Range(0, encryptedText.Length - distance - gramLength))
                 {
@@ -29,9 +29,9 @@ namespace Vigenere
 
             var countBarrier = (int) Math.Floor(Math.Sqrt(encryptedText.Length) / 10.0);
 
-            var advancedDistances = allDistances.FilterByOccurs(o => o > countBarrier);
+            var advancedDistances = allDistances.FilterByOccurs(x => x > countBarrier);
 
-            var gcd = advancedDistances.Aggregate(Gcd);
+            var gcd = advancedDistances.DefaultIfEmpty(1).Aggregate(Gcd);
 
             return gcd;
         }

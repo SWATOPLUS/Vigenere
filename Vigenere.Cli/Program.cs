@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -7,13 +9,26 @@ namespace Vigenere.Cli
 {
     internal class Program
     {
+        private const string BigPureFileName = "bigpure.txt";
         private const string PureFileName = "pure.txt";
         private const string EncryptedFileName = "encrypted.txt";
         private const string DecryptedFileName = "decrypted.txt";
 
         public static void Main(string[] args)
         {
-            CryptAndAnalyze();
+            OutputGraphics(1000, 10000);
+            OutputGraphics(3000, 10000);
+            OutputGraphics(10000, 1000);
+            OutputGraphics(30000, 1000);
+            OutputGraphics(100000, 100);
+            OutputGraphics(300000, 100);
+            OutputGraphics(1000000, 100);
+            Console.ReadLine();
+            Console.ReadLine();
+            Console.ReadLine();
+            Console.ReadLine();
+            Console.ReadLine();
+            //CryptAndAnalyze();
         }
 
         public static readonly IDictionary<char, double> AlphabetFreq =
@@ -53,6 +68,60 @@ namespace Vigenere.Cli
             .First();
 
         public static readonly char[] Alphabet = AlphabetFreq.Keys.ToArray();
+
+        public static void OutputGraphics(int textLength, int times)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+
+            Console.WriteLine($"Results for {textLength} chars text, tested {times} times");
+
+            foreach (var keyLength in Enumerable.Range(1,20))
+            {
+                var count = GetSuccessCount(textLength, keyLength, times);
+
+                var rate = count / (double) times;
+
+                Console.WriteLine($"\t{keyLength}\t{rate * 100}%");
+            }
+
+            sw.Stop();
+
+            Console.WriteLine($"Done in {sw.Elapsed.TotalSeconds} seconds");
+        }
+
+        private static readonly string BigText = File.ReadAllText(BigPureFileName);
+
+        public static int GetSuccessCount(int textLength, int keyLength, int times)
+        {
+            var goodOccurs = 0;
+
+            foreach (var time in Enumerable.Range(0, times))
+            {
+                var startIndex = Random.Next(BigText.Length - textLength);
+
+                var text = BigText.Substring(startIndex, textLength);
+                var key = Alphabet.GetRandomElements(keyLength).Sum();
+
+                if (TestWithParameters(text, key))
+                {
+                    goodOccurs++;
+                }
+            }
+
+            return goodOccurs;
+        }
+
+        private static bool TestWithParameters(string text, string key)
+        {
+            var encryptedText = Crypt.EncryptVigenereText(text, key, Alphabet);
+            var keyLength = Analysis.CalculateKeyLength(encryptedText);
+            var hackedKey = Analysis.BuildKey(Alphabet, encryptedText, keyLength, ModeLetter);
+
+            return key == hackedKey;
+        }
+        
+        public static Random Random = new Random();
 
         public static void CryptAndAnalyze()
         {

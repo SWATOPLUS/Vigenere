@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Vigenere.Cli": {
+      "commandName": "Project",
+      "workingDirectory": "."
+    }
+  }
+}

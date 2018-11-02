@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 
 namespace Vigenere
@@ -64,6 +63,44 @@ namespace Vigenere
                 .Select(x => x.Mode() - modeLetter)
                 .Select(x => Crypt.OffsetToChar(x, alphabet))
                 .Sum();
+        }
+
+        public static string BuildKeyByPearson(char[] alphabet, string encryptedText, int keyLength,
+            IDictionary<char, double> alphabetFreq)
+        {
+            return encryptedText
+                .Select((x, i) => (letter: x, group: i % keyLength))
+                .GroupBy(x => x.group)
+                .Select(x => x.Select(y => Crypt.CharToOffset(y.letter, alphabet)))
+                .Select(x => GetKeyOffset(x, alphabetFreq))
+                .Select(x => Crypt.OffsetToChar(x, alphabet))
+                .Sum();
+        }
+
+        private static int GetKeyOffset(IEnumerable<int> text, IDictionary<char, double> alphabetFreq)
+        {
+            var practicalFreq = text.ToCountArray(0, alphabetFreq.Count).ToFrequencyArray();
+            var theoryFreq = alphabetFreq.OrderBy(x => x.Key).Select(x => x.Value).ToArray();
+
+            return Enumerable.Range(0, practicalFreq.Length)
+                .Select(shift => practicalFreq.Shift(shift))
+                .Select((x, i) => (shift: i, chi: CalcChiSquare(x.ToArray(), theoryFreq)))
+                .OrderBy(x => x.chi)
+                .Select(x => x.shift)
+                .First();
+
+        }
+
+        private static double CalcChiSquare(IList<double> practical, IList<double> theoretical)
+        {
+            var len = Math.Min(practical.Count, theoretical.Count);
+            var value = 0.0;
+            for (var i = 0; i < len; i++)
+            {
+                value += Math.Pow(practical[i] - theoretical[i], 2) / theoretical[i];
+            }
+
+            return value;
         }
     }
 }

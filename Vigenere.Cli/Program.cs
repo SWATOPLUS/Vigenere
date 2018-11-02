@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -16,19 +15,19 @@ namespace Vigenere.Cli
 
         public static void Main(string[] args)
         {
+            CryptAndAnalyze();
+        }
+
+        public static void TestAccuracy()
+        {
             OutputGraphics(1000, 10000);
             OutputGraphics(3000, 10000);
-            OutputGraphics(10000, 1000);
+            OutputGraphics(10000, 10000);
             OutputGraphics(30000, 1000);
             OutputGraphics(100000, 100);
             OutputGraphics(300000, 100);
             OutputGraphics(1000000, 100);
             Console.ReadLine();
-            Console.ReadLine();
-            Console.ReadLine();
-            Console.ReadLine();
-            Console.ReadLine();
-            //CryptAndAnalyze();
         }
 
         public static readonly IDictionary<char, double> AlphabetFreq =
@@ -138,7 +137,7 @@ namespace Vigenere.Cli
 
             Console.WriteLine($"Key length is {keyLength}");
 
-            var hackedKey = Analysis.BuildKey(Alphabet, encryptedText, keyLength, ModeLetter);
+            var hackedKey = Analysis.BuildKeyByPearson(Alphabet, encryptedText, keyLength, AlphabetFreq);
             Console.WriteLine($"Decrypt key is {hackedKey}");
 
             var decryptedText = Crypt.DecryptVigenereText(encryptedText, hackedKey, Alphabet);

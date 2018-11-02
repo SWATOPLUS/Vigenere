@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using MoreLinq;
 
 namespace Vigenere
 {
@@ -43,6 +43,36 @@ namespace Vigenere
                 .Select(x => (value: x.Key, times: x.Count()))
                 .Where(x => occursFunc(x.times))
                 .Select(x => x.value);
+        }
+
+        public static int[] ToCountArray(this IEnumerable<int> sequence, int lowestValue, int size)
+        {
+            var result = new int[size];
+
+            sequence
+                .GroupBy(x => x)
+                .ForEach(x => result[x.Key - lowestValue] = x.Count());
+
+            return result;
+        }
+
+        public static double[] ToFrequencyArray(this int[] countArray)
+        {
+            var totalCount = countArray.Sum();
+
+            return countArray
+                .Select(x => (double) x / totalCount)
+                .ToArray();
+        }
+
+        public static IEnumerable<T> Shift<T>(this IEnumerable<T> sequence, int shift)
+        {
+            var array = sequence.ToArray();
+
+            return array
+                .Skip(shift)
+                .Concat(array.Take(shift));
+
         }
     }
 }
